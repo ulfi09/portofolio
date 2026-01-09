@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portofolio — Ulfi</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script>
+    window.tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              bgdark: '#0f172a',
+              cyanAccent: '#00F5FF',
+              purpleAccent: '#7C3AED',
+              goldAccent: '#FFD166'
+            },
+            fontFamily: {
+              sans: ['Inter', 'ui-sans-serif', 'system-ui']
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{
+      --bg:#0f172a;
+      --cyan:#00F5FF;
+      --purple:#7C3AED;
+      --gold:#FFD166;
+    }
+    html,body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+
+    /* base glass + neon */
+    .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(8px); }
+    .neon-border { position: relative; overflow: visible; }
+    .neon-border::after {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+      background: linear-gradient(90deg, rgba(0,245,255,0.16), rgba(124,58,237,0.12));
+      pointer-events: none; z-index: 0; filter: saturate(120%); mix-blend-mode: screen;
+    }
+
+    /* profile container */
+    .profile-wrap { position: relative; display: inline-block; isolation: isolate; }
+    .profile-glow {
+      position: absolute; inset: -18px; border-radius: 9999px;
+      background: radial-gradient(closest-side, rgba(0,245,255,0.12), rgba(124,58,237,0.06) 40%, transparent 60%);
+      z-index: -2; pointer-events: none; opacity: .95;
+      animation: pulse-soft 4s ease-in-out infinite;
+    }
+    @keyframes pulse-soft {
+      0%,100%{ transform: scale(.995); opacity: .95; } 50%{ transform: scale(1.04); opacity: 1; }
+    }
+
+    /* image - ensure no inherited transforms/filters cause blur */
+    .profile-img {
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:9999px;
+      filter: none !important;
+      -webkit-filter: none !important;
+      image-rendering: auto !important;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: none !important;
+    }
+
+    /* clickable area */
+    #profileDrop {
+      position: relative;
+      width: 11rem; height: 11rem;
+      cursor: pointer;
+      border-radius: 9999px;
+      overflow: hidden;
+      transition: transform .18s ease, box-shadow .18s ease;
+      display:block;
+    }
+    #profileDrop:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+
+    /* overlay + rotate controls (hidden until hover) */
+    .profile-overlay { position:absolute; inset:0; border-radius:9999px; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity .14s ease; background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.10)); }
+    #profileDrop:hover .profile-overlay { opacity:1; }
+
+    .rotate-controls {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      display: flex;
+      gap: 6px;
+      pointer-events: auto;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity .14s ease, transform .14s ease;
+      z-index: 5;
+    }
+    #profileDrop:hover .rotate-controls { opacity: 1; transform: translateY(0); }
+
+    .rot-btn {
+      width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.06); color: #fff; border-radius: 8px;
+    }
+    .rot-btn:hover { background: rgba(255,255,255,0.09); color: var(--cyan); border-color: rgba(0,245,255,0.18); }
+    .rot-btn:focus { outline:2px solid rgba(0,245,255,0.14); outline-offset:2px; }
+
+    /* label */
+    .profile-label { margin-top: 0.75rem; text-align:center; color: #cbd5e1; font-size: .95rem; }
+
+    /* reveal utility */
+    .reveal { opacity:0; transform: translateY(18px); transition: all .7s cubic-bezier(.2,.9,.2,1); will-change: transform, opacity; }
+    .reveal.show { opacity:1; transform: translateY(0); }
+
+    @media (min-width: 640px) { #profileDrop{ width:14rem; height:14rem; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .profile-glow, .reveal { animation: none !important; transition: none !important; }
+    }
+
+    /* small util for accent text */
+    .text-grad {
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    /* CTA glow */
+    .cta-glow {
+      box-shadow: 0 6px 24px rgba(0,245,255,0.06), 0 0 18px rgba(124,58,237,0.04);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .cta-glow:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 14px 40px rgba(0,245,255,0.12), 0 0 34px rgba(124,58,237,0.08); }
+  </style>
+</head>
+<body class="text-white antialiased">
+
+  <!-- NAV -->
+  <header class="fixed top-4 left-0 right-0 z-50 px-4 sm:px-8">
+    <nav class="mx-auto max-w-6xl flex items-center justify-between glass neon-border rounded-2xl px-4 py-3 backdrop-blur-lg bg-white/3">
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center text-black font-bold shadow-sm">U</div>
+        <span class="font-semibold tracking-tight">Ulfi — Portofolio</span>
+      </a>
+      <div class="hidden md:flex items-center gap-6 text-sm text-slate-200">
+        <a href="#about" class="hover:text-cyan-300 transition">About</a>
+        <a href="#skills" class="hover:text-cyan-300 transition">Skills</a>
+        <a href="#work" class="hover:text-cyan-300 transition">Work</a>
+        <a href="#contact" class="hover:text-cyan-300 transition">Contact</a>
+        <a href="#" class="ml-2 px-3 py-1.5 rounded-md bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-medium shadow-sm">Resume</a>
+      </div>
+      <div class="md:hidden">
+        <button aria-label="menu" class="p-2 rounded-md bg-white/5 hover:bg-white/6">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M3 12h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="pt-28 pb-20">
+    <div class="mx-auto max-w-6xl px-4 sm:px-8">
+      <!-- HERO -->
+      <section class="grid lg:grid-cols-2 gap-8 items-center mb-16">
+        <div class="space-y-6 reveal">
+          <h1 class="text-4xl sm:text-6xl font-extrabold leading-tight">
+            <span class="text-grad">Ulfi</span>
+            <div class="text-slate-300 text-lg sm:text-xl mt-2">Data Entry — Teliti & Andal</div>
+          </h1>
+
+          <p class="text-slate-300 max-w-xl">
+            Saya seorang data entri pemula yang berfokus pada ketelitian dan konsistensi. Meskipun masih awal dalam karier, saya berkomitmen untuk memberikan hasil data yang bersih dan terstruktur. Saya nyaman bekerja dengan spreadsheet, melakukan verifikasi data, dan mengikuti instruksi proses kerja yang jelas.
+          </p>
+
+          <div class="flex items-center gap-4">
+            <a href="#work" class="inline-flex items-center gap-3 px-5 py-3 rounded-full text-sm font-medium bg-gradient-to-r from-cyan-400 to-purple-500 text-black shadow-lg cta-glow">Lihat Contoh Kerja</a>
+            <a href="#contact" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/8 text-sm text-slate-200 hover:text-cyan-300 transition">Hubungi</a>
+          </div>
+
+          <div class="flex items-center gap-4 mt-3 text-slate-400 text-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-cyan-400/80 shadow-sm"></span>
+              <span>Freelance • Terbuka untuk tugas</span>
+            </div>
+            <div class="flex items-center gap-3 ml-4">
+              <span class="w-2 h-2 rounded-full bg-purple-400/70 shadow-sm"></span>
+              <span>Based in Indonesia</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-center lg:justify-end reveal">
+          <div class="profile-wrap rounded-full p-1 relative">
+            <div class="profile-glow" aria-hidden="true"></div>
+
+            <!-- Clickable photo area -->
+            <div id="profileDrop" class="relative glass neon-border" role="button" aria-label="Klik untuk ganti foto" tabindex="0" title="Klik untuk mengganti foto atau drop gambar di sini">
+              <!-- rotate controls (appear on hover) -->
+              <div class="rotate-controls" aria-hidden="false">
+                <button id="rotLeft" class="rot-btn" title="Rotate Left (90°)">&larr;</button>
+                <button id="rotRight" class="rot-btn" title="Rotate Right (90°)">&rarr;</button>
+              </div>
+
+              <!-- image -->
+              <img id="profileImg" class="profile-img" src="profile.jpg" alt="Foto profil" decoding="async" loading="eager">
+
+              <div class="profile-overlay" aria-hidden="true">
+                <svg class="w-8 h-8 text-white/85" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v6M12 22v-6M2 12h6M22 12h-6M4.2 4.2l4.2 4.2M19.8 19.8l-4.2-4.2M4.2 19.8l4.2-4.2M19.8 4.2l-4.2 4.2"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="profile-label">Ulfi — Data Entry</div>
+          </div>
+
+          <!-- hidden file input -->
+          <input id="photoInput" type="file" accept="image/*" style="display:none" />
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about" class="mb-12 reveal">
+        <div class="glass neon-border rounded-2xl p-6 md:p-8">
+          <div class="lg:flex lg:items-start lg:gap-8">
+            <div class="lg:flex-1">
+              <h2 class="text-2xl font-semibold mb-3">Tentang Saya</h2>
+              <p class="text-slate-300 leading-relaxed">
+                Saya seorang data entri pemula yang berfokus pada ketelitian dan konsistensi. Meskipun masih awal dalam karier, saya berkomitmen untuk memberikan hasil data yang bersih dan terstruktur. Saya nyaman bekerja dengan spreadsheet, melakukan verifikasi data, dan mengikuti instruksi proses kerja yang jelas.
+              </p>
+            </div>
+
+            <div class="mt-6 lg:mt-0 w-full lg:w-64">
+              <ul class="text-sm text-slate-300 space-y-3">
+                <li><strong class="text-slate-100">Nama:</strong> Ulfi</li>
+                <li><strong class="text-slate-100">Peran:</strong> Data Entry</li>
+                <li><strong class="text-slate-100">Lokasi:</strong> Indonesia</li>
+                <li><strong class="text-slate-100">Email:</strong> ulfi@example.com</li>
+                <li><strong class="text-slate-100">Pengalaman:</strong> Siap belajar dan berkembang</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SKILLS (BENTO GRID) -->
+      <section id="skills" class="mb-12">
+        <h3 class="text-xl font-semibold mb-4 reveal">Skill</h3>
+        <div class="bento grid auto-rows-fr reveal" style="display:grid; grid-template-columns: repeat(6,1fr); gap:16px; grid-auto-rows:1fr;">
+          <div style="grid-column: span 2; grid-row: span 2;" class="glass neon-border rounded-xl p-5">
+            <h4 class="text-lg font-semibold text-white">Data Entry & Akurasi</h4>
+            <p class="text-slate-300 mt-2 text-sm">Penginputan data dengan fokus pada kualitas dan validasi.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="text-xs px-3 py-1 rounded-full bg-white/5">Akurasi</span>
+              <span class="text-xs px-3 py-1 rounded-full bg-white/5">Konsistensi</span>
+            </div>
+          </div>
+
+          <div style="grid-column: span 2;" class="glass rounded-xl p-5 neon-border">
+            <h5 class="font-semibold">Spreadsheet</h5>
+            <p class="text-slate-300 text-sm mt-2">Excel, Google Sheets — formula dasar, filtering, sort.</p>
+          </div>
+
+          <div style="grid-column: span 1;" class="glass rounded-xl p-5 neon-border">
+            <h5 class="font-semibold">Typing & Shortcuts</h5>
+            <p class="text-slate-300 text-sm mt-2">Kecepatan mengetik dan efisiensi shortcut.</p>
+          </div>
+
+          <div style="grid-column: span 2;" class="glass rounded-xl p-5 neon-border">
+            <h5 class="font-semibold">Alat & Tooling</h5>
+            <p class="text-slate-300 text-sm mt-2">MS Excel, Google Sheets, Airtable (dasar), Google Forms.</p>
+          </div>
+
+          <div style="grid-column: span 3; grid-row: span 2;" class="glass rounded-xl p-5 neon-border">
+            <h4 class="font-semibold">Data Cleaning & Validation</h4>
+            <div class="mt-3 grid grid-cols-2 gap-2 text-sm text-slate-300">
+              <div>- Normalisasi data</div>
+              <div>- Pengecekan duplikat</div>
+              <div>- Validasi format</div>
+              <div>- Konsistensi entri</div>
+            </div>
+          </div>
+
+          <div style="grid-column: span 1;" class="glass rounded-xl p-5 neon-border">
+            <h5 class="font-semibold">Kolaborasi</h5>
+            <p class="text-slate-300 text-sm mt-2">Komunikasi tim, manajemen waktu, mengikuti SOP.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PORTFOLIO / SAMPLE WORK -->
+      <section id="work" class="mb-12">
+        <h3 class="text-xl font-semibold mb-6 reveal">Contoh Kerja</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <article class="project-card glass rounded-xl neon-border reveal">
+            <img src="https://images.unsplash.com/photo-1526470498-5bd38b0b2d6b?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=7c9a2b3f80af0b3b62c9f5b9560beb9d" alt="Contoh 1" class="w-full h-56 object-cover rounded-xl">
+            <div class="project-overlay">
+              <a href="#" class="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-medium">Lihat</a>
+            </div>
+            <div class="p-4">
+              <h4 class="font-semibold">Pembersihan Data</h4>
+              <p class="text-slate-300 text-sm mt-1">Menghapus duplikat dan memperbaiki format tanggal pada dataset survei.</p>
+            </div>
+          </article>
+
+          <article class="project-card glass rounded-xl neon-border reveal">
+            <img src="https://images.unsplash.com/photo-1509395176047-4a66953fd231?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=cc1e615f8ad7c9c3e1b0b7a706f90041" alt="Contoh 2" class="w-full h-56 object-cover rounded-xl">
+            <div class="project-overlay">
+              <a href="#" class="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-medium">Lihat</a>
+            </div>
+            <div class="p-4">
+              <h4 class="font-semibold">Entri Invoice</h4>
+              <p class="text-slate-300 text-sm mt-1">Entri data faktur dan verifikasi nilai untuk klien kecil.</p>
+            </div>
+          </article>
+
+          <article class="project-card glass rounded-xl neon-border reveal">
+            <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=0ddadbb8a8b7be5029c6e6d1bd2d37d1" alt="Contoh 3" class="w-full h-56 object-cover rounded-xl">
+            <div class="project-overlay">
+              <a href="#" class="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-medium">Lihat</a>
+            </div>
+            <div class="p-4">
+              <h4 class="font-semibold">Pengolahan Survei</h4>
+              <p class="text-slate-300 text-sm mt-1">Kompilasi jawaban survei dan ringkasan statistik sederhana.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact" class="mb-12 reveal">
+        <div class="glass neon-border rounded-2xl p-6 md:p-8 grid lg:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-2xl font-semibold">Get in touch</h3>
+            <p class="text-slate-300 mt-2">Tertarik bekerja sama? Isi form atau hubungi saya melalui media sosial.</p>
+
+            <div class="mt-6 flex items-center gap-4">
+              <a href="#" class="p-3 rounded-full hover:text-cyan-400 transition" aria-label="Instagram">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></svg>
+              </a>
+              <a href="#" class="p-3 rounded-full hover:text-cyan-400 transition" aria-label="LinkedIn">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8a6 6 0 0 1 6 6v6h-4v-6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v6h-4v-12h4v2"/></svg>
+              </a>
+              <a href="#" class="p-3 rounded-full hover:text-cyan-400 transition" aria-label="GitHub">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-4.97 1.5-5-2.5-7-3 2-1 1-4 1-4 2 .5 3 2 4 2 0-2 1-3 4-3s4 1 4 3c1 0 2-1 4-2 0 0-1 3 1 4-2.01.5-2.02 4.5-7 3"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <form class="space-y-4" onsubmit="event.preventDefault(); alert('Pesan terkirim — ini demo.');">
+            <label class="block">
+              <span class="text-sm text-slate-300">Nama</span>
+              <input required class="mt-1 block w-full rounded-md border border-white/6 bg-transparent px-3 py-2 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="Nama Anda" />
+            </label>
+
+            <label class="block">
+              <span class="text-sm text-slate-300">Email</span>
+              <input type="email" required class="mt-1 block w-full rounded-md border border-white/6 bg-transparent px-3 py-2 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="email@contoh.com" />
+            </label>
+
+            <label class="block">
+              <span class="text-sm text-slate-300">Pesan</span>
+              <textarea required rows="4" class="mt-1 block w-full rounded-md border border-white/6 bg-transparent px-3 py-2 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="Tulis pesan..."></textarea>
+            </label>
+
+            <div class="flex items-center justify-end">
+              <button type="submit" class="px-5 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-medium cta-glow">Kirim</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="mt-8 text-slate-400">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>© <strong>Ulfi</strong> — Data Entry</div>
+          <div class="flex items-center gap-3">
+            <a href="#" class="p-2 hover:text-cyan-300 transition">Instagram</a>
+            <a href="#" class="p-2 hover:text-cyan-300 transition">LinkedIn</a>
+            <a href="#" class="p-2 hover:text-cyan-300 transition">GitHub</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    // Helper: parse EXIF orientation from ArrayBuffer (reads JPEG APP1 segment)
+    function getOrientationFromArrayBuffer(arrayBuffer) {
+      const view = new DataView(arrayBuffer);
+      if (view.getUint16(0, false) !== 0xFFD8) return -2; // not JPEG
+      let offset = 2, length = view.byteLength;
+      while (offset < length) {
+        const marker = view.getUint16(offset, false); offset += 2;
+        if (marker === 0xFFE1) { // APP1
+          const exifLength = view.getUint16(offset, false); offset += 2;
+          if (view.getUint32(offset, false) !== 0x45786966) return -1; // "Exif"
+          offset += 6;
+          const little = view.getUint16(offset, false) === 0x4949;
+          offset += view.getUint32(offset + 4, little);
+          const tags = view.getUint16(offset, little); offset += 2;
+          for (let i = 0; i < tags; i++) {
+            const tagOffset = offset + (i * 12);
+            const tag = view.getUint16(tagOffset, little);
+            if (tag === 0x0112) {
+              const orientation = view.getUint16(tagOffset + 8, little);
+              return orientation;
+            }
+          }
+        } else if ((marker & 0xFF00) !== 0xFF00) break;
+        else offset += view.getUint16(offset, false);
+      }
+      return -1;
+    }
+
+    // Draw image into canvas fixing orientation -> returns dataURL
+    function fixImageOrientation(img, orientation) {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      let canvas = document.createElement('canvas');
+      let ctx = canvas.getContext('2d');
+
+      if (!orientation || orientation === 1) {
+        canvas.width = w; canvas.height = h;
+        ctx.drawImage(img, 0, 0);
+      } else if (orientation === 6) { // rotate 90 CW
+        canvas.width = h; canvas.height = w;
+        ctx.translate(canvas.width, 0);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(img, 0, 0);
+      } else if (orientation === 8) { // rotate 270 CW
+        canvas.width = h; canvas.height = w;
+        ctx.translate(0, canvas.height);
+        ctx.rotate(-Math.PI / 2);
+        ctx.drawImage(img, 0, 0);
+      } else if (orientation === 3) { // rotate 180
+        canvas.width = w; canvas.height = h;
+        ctx.translate(canvas.width, canvas.height);
+        ctx.rotate(Math.PI);
+        ctx.drawImage(img, 0, 0);
+      } else {
+        canvas.width = w; canvas.height = h;
+        ctx.drawImage(img, 0, 0);
+      }
+      return canvas.toDataURL('image/jpeg', 0.92);
+    }
+
+    // Rotate existing dataURL by 90 deg steps (used for manual rotate controls)
+    function rotateDataURL(dataURL, direction = 1, callback) {
+      const img = new Image();
+      img.onload = function() {
+        const sw = img.naturalWidth, sh = img.naturalHeight;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (direction === 1) { canvas.width = sh; canvas.height = sw; ctx.translate(canvas.width, 0); ctx.rotate(Math.PI/2); }
+        else if (direction === 3) { canvas.width = sh; canvas.height = sw; ctx.translate(0, canvas.height); ctx.rotate(-Math.PI/2); }
+        else if (direction === 2) { canvas.width = sw; canvas.height = sh; ctx.translate(canvas.width, canvas.height); ctx.rotate(Math.PI); }
+        else { canvas.width = sw; canvas.height = sh; }
+        ctx.drawImage(img, 0, 0);
+        callback(canvas.toDataURL('image/jpeg', 0.92));
+      };
+      img.src = dataURL;
+    }
+
+    (function(){
+      const profileImg = document.getElementById('profileImg');
+      const dropArea = document.getElementById('profileDrop');
+      const input = document.getElementById('photoInput');
+      const rotLeft = document.getElementById('rotLeft');
+      const rotRight = document.getElementById('rotRight');
+      const LOCAL_KEY = 'portfolio_profile_photo_dataurl';
+      const highResFallback = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=4b0d5f7dfdc9b82c6284b3c7bd53df36';
+
+      // load saved image if any
+      const saved = localStorage.getItem(LOCAL_KEY);
+      if (saved) {
+        profileImg.src = saved;
+      } else {
+        profileImg.onerror = () => { profileImg.src = highResFallback; };
+      }
+
+      // Open picker on click/keyboard
+      const openPicker = () => input.click();
+      dropArea.addEventListener('click', openPicker);
+      dropArea.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); } });
+
+      // handle file selection: read arrayBuffer for EXIF then dataURL, fix orientation, set image and save
+      input.addEventListener('change', e => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        if (!f.type.startsWith('image/')) return alert('Pilih file gambar.');
+        if (f.size < 10 * 1024) alert('File sangat kecil — gunakan foto beresolusi lebih tinggi untuk hasil tajam.');
+
+        const readerBuffer = new FileReader();
+        readerBuffer.onload = function(ev) {
+          const arrayBuffer = ev.target.result;
+          const orientation = getOrientationFromArrayBuffer(arrayBuffer);
+          const readerUrl = new FileReader();
+          readerUrl.onload = function(ev2) {
+            const dataUrl = ev2.target.result;
+            const img = new Image();
+            img.onload = function() {
+              const fixedDataUrl = fixImageOrientation(img, orientation > 0 ? orientation : 1);
+              profileImg.src = fixedDataUrl;
+              try { localStorage.setItem(LOCAL_KEY, fixedDataUrl); } catch(err) { console.warn('LocalStorage tidak tersedia.'); }
+            };
+            img.src = dataUrl;
+          };
+          readerUrl.readAsDataURL(f);
+        };
+        readerBuffer.readAsArrayBuffer(f);
+        e.target.value = '';
+      });
+
+      // drag & drop
+      ['dragenter','dragover'].forEach(ev => dropArea.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dropArea.classList.add('drag'); }));
+      ['dragleave','drop'].forEach(ev => dropArea.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dropArea.classList.remove('drag'); }));
+      dropArea.addEventListener('drop', e => {
+        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!f) return;
+        if (!f.type.startsWith('image/')) return alert('Pilih file gambar.');
+        if (f.size < 10 * 1024) alert('File sangat kecil — gunakan foto beresolusi lebih tinggi untuk hasil tajam.');
+
+        const readerBuffer = new FileReader();
+        readerBuffer.onload = function(ev) {
+          const arrayBuffer = ev.target.result;
+          const orientation = getOrientationFromArrayBuffer(arrayBuffer);
+          const readerUrl = new FileReader();
+          readerUrl.onload = function(ev2) {
+            const dataUrl = ev2.target.result;
+            const img = new Image();
+            img.onload = function() {
+              const fixedDataUrl = fixImageOrientation(img, orientation > 0 ? orientation : 1);
+              profileImg.src = fixedDataUrl;
+              try { localStorage.setItem(LOCAL_KEY, fixedDataUrl); } catch(err) { console.warn('LocalStorage tidak tersedia.'); }
+            };
+            img.src = dataUrl;
+          };
+          readerUrl.readAsDataURL(f);
+        };
+        readerBuffer.readAsArrayBuffer(f);
+      });
+
+      // Manual rotate controls (for images already saved/displayed)
+      function rotateAndSave(direction) {
+        const data = profileImg.src;
+        if (!data) return;
+        const dir = (direction === 'right') ? 1 : 3;
+        rotateDataURL(data, dir, function(newDataUrl) {
+          profileImg.src = newDataUrl;
+          try { localStorage.setItem(LOCAL_KEY, newDataUrl); } catch(err) { console.warn('LocalStorage tidak tersedia.'); }
+        });
+      }
+
+      rotLeft.addEventListener('click', (e) => { e.stopPropagation(); rotateAndSave('left'); });
+      rotRight.addEventListener('click', (e) => { e.stopPropagation(); rotateAndSave('right'); });
+    })();
+
+    // Scroll reveal
+    (function(){
+      const obs = new IntersectionObserver((entries, o) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); o.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    })();
+  </script>
+
+</body>
+</html>
